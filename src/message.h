@@ -4,6 +4,12 @@
 
 struct Message{
 
+	Message() = default;
+	Message(Message& other) = default;
+	Message(Message&& other) noexcept;
+	Message& operator=(Message& other) = default;
+	Message& operator=(Message&& other) noexcept;
+	
 	void arbiration_id(int id);
 	int arbitration_id() const;
 

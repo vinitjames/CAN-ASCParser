@@ -22,7 +22,7 @@ bool ASCParser::parseHeader(){
 			std::getline(_ifs, _date);
 			continue;
 		}
-  
+		
 		if(word == "base"){
 			_ifs >> _base;
 			continue;
@@ -44,7 +44,6 @@ bool ASCParser::parseHeader(){
 		}
 
 		return false;
-		
 	}
 	
 	return checkHeader();
@@ -57,11 +56,9 @@ bool ASCParser::getMessasge(){
 	if(checkTimestamp(split_frame))
 		return false;
 	
-	
-		
-	if (is_canfd_frame(line))
+	if (isCANFD(split_frame))
 		return parseCANFD(line);
-	if(is_can_frame(line))
+	else:
 		return parseCAN(line);
 	return false;
 }
@@ -72,6 +69,11 @@ bool ASCParser::checkTimestamp(std::vector<std::string>& split_frame){
 	return *endptr == 0
 }
 
+bool ASCParser::isCANFD(std::vector<std::string>& split_frame){
+	return split_frame[1] == "CANFD";
+	
+}
+
 std::vector<std::string>splitFrame(const std::string& frame){
 	std::istringstream ss(frame);
 	std::vector<std::string> splitframe(std::istream_iterator<std::string>{ss},
@@ -79,8 +81,73 @@ std::vector<std::string>splitFrame(const std::string& frame){
 	
 }
 
-Message& ParseCANFD(const std::string& line){
-	line.substr()
+Message ParseCANFD(const std::vector<std::string>& split_frame){
+	Message msg;
+	size_t _index = 2;
+	msg.is_fd(true);
+	msg.channel(stoi(split_frame[_index++].c_str()) - 1);
+	msg.is_rx(split_frame[_index++] == "Rx");
+	if(split_frame[_index] == "errorframe"){
+		msg.is_error_frame(true);
+		return msg;		
+	}
+	msg.arbitration_id(get_arbitraionid(split_frame[_index++]));
+
+	if(!stoi(split_frame[_index].c_str())){
+		_index++;
+		}
+	
+	msg.bit_rate_switch(split_frame[_index++] == "1");
+	msg.error_state_indicator(split_frame[_index++] == "1");
+	msg.dlc(stoi(split_frame[_index++], 16));
+	msg.data_length(stoi(split_frame[_index++]));
+	if(msg.data_length() == 0){
+		msg.is_remote_frame(true);
+		return msg;
+	}
+
+	msg.data = ParseDataFromString(split_frame, msg.data_length(), _index);
+
+	return msg;			
+}
+
+Message ParseCAN(const std::vector<std::string>& split_frame){
+	Message msg;
+	size_t _index = 1;
+	msg.is_fd(false);
+	msg.channel(std::stoi(split_frame[_index++].c_str()) - 1);
+	if(split_frame[_index] == "errorframe"){
+		msg.is_error_frame(true);
+		return msg;		
+	}
+	
+	msg.arbitration_id(get_arbitraionid(split_frame[_index++]));
+	msg.is_rx(split_frame[_index++] == "Rx");
+	if(!std::stoi(split_frame[_index].c_str())){
+		_index++;
+		}
+	
+	msg.bit_rate_switch(split_frame[_index++] == "1");
+	msg.error_state_indicator(split_frame[_index++] == "1");
+	msg.dlc(stoi(split_frame[_index++], 16));
+	msg.data_length(stoi(split_frame[_index++]));
+	if(msg.data_length() == 0){
+		msg.is_remote_frame(true);
+		return msg;
+	}
+
+	msg.data = ParseDataFromString(split_frame, msg.data_length(), _index);
+
+	return msg;			
+}
+
+
+std::vector<uint8_t> ParseDataFromString(const std::vector<std::string>& split_frame,
+										 size_t length, size_t index){
+	std::vector<uint8_t> data(length);
+	for(int i = 0; i<length; i++)
+		data.push_back(stoi(split_frame[index++]));
+	return data;
 }
 
 bool ASCParser::checkHeader(){

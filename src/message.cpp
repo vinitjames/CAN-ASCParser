@@ -1,5 +1,38 @@
 #include "message.h"
 
+
+Message::Message(Message&& other) noexcept
+	:_timestamp{other._timestamp},
+	 _arbitration_id{other._arbitration_id},
+	 _is_extended_id{other._is_extended_id},
+	 _is_remote_frame{other._is_remote_frame},
+	 _is_error_frame{other._is_error_frame},
+	 _channel{other._channel},
+	 _dlc{other._dlc},
+	 _is_fd{other._is_fd},
+	 _is_rx{other._is_rx},
+	 _bit_rate_switch{other._bit_rate_switch},
+	 _error_state_indicator{other._error_state_indicator},
+	 _data{std::move(other._data)}{}
+
+Message& Message::operator=(Message&& other) noexcept{
+	if(this != &other){
+		_timestamp = other._timestamp;
+		_arbitration_id = other._arbitration_id;
+		_is_extended_id = other._is_extended_id;
+		_is_remote_frame = other._is_remote_frame;
+		_is_error_frame = other._is_error_frame;
+		_channel = other._channel;
+		_dlc = other._dlc;
+		_is_fd = other._is_fd;
+		_is_rx = other._is_rx;
+		_bit_rate_switch = other._bit_rate_switch;
+		_error_state_indicator = other._error_state_indicator;
+		_data = std::move(other._data);
+	}
+	return *this;
+}
+	
 void  Message::arbiration_id(int id){ _arbitration_id = id;}
 int Message::arbitration_id() const {return _arbitration_id;}
 
