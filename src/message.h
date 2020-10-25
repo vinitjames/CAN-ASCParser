@@ -10,7 +10,7 @@ struct Message{
 	Message& operator=(Message& other) = default;
 	Message& operator=(Message&& other) noexcept;
 	
-	void arbiration_id(int id);
+	void arbitration_id(int id);
 	int arbitration_id() const;
 
 	void bit_rate_switch(bool bit_rate_switch);

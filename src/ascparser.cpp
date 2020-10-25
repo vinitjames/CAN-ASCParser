@@ -3,6 +3,7 @@
 #include<iostream>
 #include <sstream>
 #include <iterator>
+#include <memory>
 
 ASCParser::ASCParser(const std::string& filename){
 	if(filename.substr(filename.find(".asc")) != ".asc")
@@ -10,9 +11,9 @@ ASCParser::ASCParser(const std::string& filename){
 	_ifs.open(filename, std::ifstream::in);
 	if(!_ifs.is_open())
 		throw std::invalid_argument("Could not open filename");
-	
+	if(!parseHeader())
+		throw std::domain_error("asc file with wrong header");
 	}
-
 
 bool ASCParser::parseHeader(){
 	std::string word;
@@ -49,69 +50,85 @@ bool ASCParser::parseHeader(){
 	return checkHeader();
 }
 
-bool ASCParser::getMessasge(){
+std::unique_ptr<Message> ASCParser::getMessage(){
 	std::string line;
 	std::getline(_ifs,line);
 	std::vector<std::string> split_frame = splitFrame(line);
-	if(checkTimestamp(split_frame))
-		return false;
+	if(!checkTimestamp(split_frame))
+		return nullptr;
+		
 	
 	if (isCANFD(split_frame))
-		return parseCANFD(line);
-	else:
-		return parseCAN(line);
-	return false;
+		return std::make_unique<Message>(parseCANFD(split_frame));
+	if (isCAN(split_frame))
+		return std::make_unique<Message>(parseCAN(split_frame));
+	return nullptr;
 }
 
-bool ASCParser::checkTimestamp(std::vector<std::string>& split_frame){
-	char* endptr;
-	double timestamp = strtod(split_frame[0].c_str(), &endptr);
-	return *endptr == 0
+bool ASCParser::checkTimestamp(const std::vector<std::string>& split_frame){
+	return isDouble(split_frame[0]);
 }
 
-bool ASCParser::isCANFD(std::vector<std::string>& split_frame){
+bool ASCParser::isCAN(const std::vector<std::string>& split_frame){
+	return isInt(split_frame[1]);
+	
+}
+
+bool ASCParser::isInt(const std::string& str){
+	char* endptr = nullptr;
+	std::strtol(str.c_str(), &endptr, 10);
+	return *endptr == '\0';
+}
+
+bool ASCParser::isDouble(const std::string& str){
+	char* endptr = nullptr;
+	std::strtod(str.c_str(), &endptr);
+	return *endptr == '\0';
+}
+
+bool ASCParser::isCANFD(const std::vector<std::string>& split_frame){
 	return split_frame[1] == "CANFD";
 	
 }
 
-std::vector<std::string>splitFrame(const std::string& frame){
+std::vector<std::string> ASCParser::splitFrame(const std::string& frame){
 	std::istringstream ss(frame);
 	std::vector<std::string> splitframe(std::istream_iterator<std::string>{ss},
 										std::istream_iterator<std::string>());
-	
+	return splitframe;	
 }
 
-Message ParseCANFD(const std::vector<std::string>& split_frame){
+Message ASCParser::parseCANFD(const std::vector<std::string>& split_frame){
 	Message msg;
-	size_t _index = 2;
+	msg.timestamp(std::stod(split_frame[0]));
 	msg.is_fd(true);
-	msg.channel(stoi(split_frame[_index++].c_str()) - 1);
+	size_t _index = 2;
+	msg.channel(std::stoi(split_frame[_index++]) - 1);
 	msg.is_rx(split_frame[_index++] == "Rx");
 	if(split_frame[_index] == "errorframe"){
 		msg.is_error_frame(true);
 		return msg;		
 	}
-	msg.arbitration_id(get_arbitraionid(split_frame[_index++]));
-
-	if(!stoi(split_frame[_index].c_str())){
+	
+	msg.arbitration_id(getArbitrationID(split_frame[_index++]));
+	
+	if(!isInt(split_frame[_index])){
 		_index++;
 		}
 	
 	msg.bit_rate_switch(split_frame[_index++] == "1");
 	msg.error_state_indicator(split_frame[_index++] == "1");
-	msg.dlc(stoi(split_frame[_index++], 16));
-	msg.data_length(stoi(split_frame[_index++]));
-	if(msg.data_length() == 0){
+	msg.dlc(std::stoi(split_frame[_index++], nullptr, getBase()));
+	int _data_length = std::stoi(split_frame[_index++]);
+	if(_data_length == 0){
 		msg.is_remote_frame(true);
 		return msg;
 	}
-
-	msg.data = ParseDataFromString(split_frame, msg.data_length(), _index);
-
+	//msg.data = parseDataFromString(split_frame, _data_length, _index);
 	return msg;			
 }
 
-Message ParseCAN(const std::vector<std::string>& split_frame){
+Message ASCParser::parseCAN(const std::vector<std::string>& split_frame){
 	Message msg;
 	size_t _index = 1;
 	msg.is_fd(false);
@@ -119,31 +136,35 @@ Message ParseCAN(const std::vector<std::string>& split_frame){
 	if(split_frame[_index] == "errorframe"){
 		msg.is_error_frame(true);
 		return msg;		
-	}
-	
-	msg.arbitration_id(get_arbitraionid(split_frame[_index++]));
+	}	
+	msg.arbitration_id(getArbitrationID(split_frame[_index++]));
 	msg.is_rx(split_frame[_index++] == "Rx");
-	if(!std::stoi(split_frame[_index].c_str())){
+	if(!isInt(split_frame[_index])){
 		_index++;
 		}
 	
 	msg.bit_rate_switch(split_frame[_index++] == "1");
 	msg.error_state_indicator(split_frame[_index++] == "1");
-	msg.dlc(stoi(split_frame[_index++], 16));
-	msg.data_length(stoi(split_frame[_index++]));
-	if(msg.data_length() == 0){
+	msg.dlc(std::stoi(split_frame[_index++], nullptr, getBase()));
+	int _data_length = stoi(split_frame[_index++]);
+	if(_data_length == 0){
 		msg.is_remote_frame(true);
 		return msg;
 	}
 
-	msg.data = ParseDataFromString(split_frame, msg.data_length(), _index);
+	//msg.data = parseDataFromString(split_frame, _data_length, _index);
 
 	return msg;			
 }
 
+int ASCParser::getArbitrationID(const std::string& can_id_str){
+	if(can_id_str.back() == 'x')
+		return std::stoi(can_id_str.substr(0, can_id_str.length()-1), nullptr, 16);
+	return std::stoi(can_id_str, nullptr, getBase());	
+}
 
-std::vector<uint8_t> ParseDataFromString(const std::vector<std::string>& split_frame,
-										 size_t length, size_t index){
+std::vector<uint8_t> ASCParser::parseDataFromString(const std::vector<std::string>& split_frame,
+													size_t length, size_t index){
 	std::vector<uint8_t> data(length);
 	for(int i = 0; i<length; i++)
 		data.push_back(stoi(split_frame[index++]));
@@ -160,13 +181,22 @@ bool ASCParser::checkHeader(){
 	return true;
 }
 
+int ASCParser::getBase(){
+	return _base == "hex" ? 16 : 10;
+	}
+
 ASCParser::~ASCParser()noexcept{
 	_ifs.close();
 }
 
 int main(int argc, char *argv[])
 {
-    ASCParser parser("../testfile.asc");
-	std::cout<<parser.parseHeader();
+    ASCParser parser("test_CanFdMessage.asc");
+	std::unique_ptr<Message> msg;
+	do{
+		msg = parser.getMessage();
+	}
+	while(msg == nullptr);
+	std::cout<<msg->timestamp()<<std::endl;
     return 0;
 }

@@ -33,7 +33,7 @@ Message& Message::operator=(Message&& other) noexcept{
 	return *this;
 }
 	
-void  Message::arbiration_id(int id){ _arbitration_id = id;}
+void  Message::arbitration_id(int id){ _arbitration_id = id;}
 int Message::arbitration_id() const {return _arbitration_id;}
 
 void Message::bit_rate_switch(bool bit_rate_switch) {  _bit_rate_switch = bit_rate_switch;};
@@ -45,8 +45,12 @@ int Message::channel() const {return _channel;}
 void Message::dlc(int dlc){ _dlc = dlc;}
 int Message::dlc() const {return _dlc;}
 
-void Message::is_error_frame(bool err_state_ind) { _error_state_indicator = err_state_ind;}
-bool Message::is_error_frame() const { return _error_state_indicator;}
+
+void Message::error_state_indicator(bool err_state_ind) { _error_state_indicator = err_state_ind;}
+bool Message::error_state_indicator() const { return _error_state_indicator;}
+
+void Message::is_error_frame(bool is_error_frame) { _is_error_frame = is_error_frame;}
+bool Message::is_error_frame() const { return _is_error_frame;}
 
 void Message::is_extended(bool is_extended){ _is_extended_id = is_extended;}
 bool Message::is_extended() const { return _is_extended_id;}

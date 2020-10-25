@@ -1,5 +1,6 @@
 #include <fstream>
 #include <string>
+#include <memory>
 #include "message.h"
 
 class ASCParser
@@ -23,12 +24,23 @@ public:
 	//! Move assignment operator
 	ASCParser& operator=(ASCParser &&other) noexcept;
 
-	bool getMessasge();
-	Message& ParseCANFD(const std::string& line);
+	std::unique_ptr<Message> getMessage();
+	Message parseCANFD(const std::vector<std::string>& split_frame);
+	Message parseCAN(const std::vector<std::string>& split_frame);
+	
 private:
 	bool parseHeader();
 	bool checkHeader();
-	
+	int getArbitrationID(const std::string& can_id_str);
+	int getBase();
+	bool checkTimestamp(const std::vector<std::string>& split_frame);
+	std::vector<std::string> splitFrame(const std::string& frame);
+	bool isCANFD(const std::vector<std::string>& split_frame);
+	bool isCAN(const std::vector<std::string>& split_frame);
+	bool isInt(const std::string& str);
+	bool isDouble(const std::string& str);
+	std::vector<uint8_t> parseDataFromString(const std::vector<std::string>& split_frame,
+											 size_t length, size_t index);
 	std::ifstream _ifs;
 	std::string _date;
 	std::string _base;
