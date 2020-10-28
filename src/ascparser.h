@@ -1,3 +1,6 @@
+#ifndef ASCPARSER_H
+#define ASCPARSER_H
+
 #include <fstream>
 #include <string>
 #include <memory>
@@ -27,7 +30,7 @@ public:
 	std::unique_ptr<Message> getMessage();
 	Message parseCANFD(const std::vector<std::string>& split_frame);
 	Message parseCAN(const std::vector<std::string>& split_frame);
-	
+	bool fileEnded(){return eof_reached;}
 private:
 	bool parseHeader();
 	bool checkHeader();
@@ -46,4 +49,7 @@ private:
 	std::string _base;
 	std::string _timestamp_format;
 	bool _internal_events_logged = false;
+	bool eof_reached = false;
 };
+
+#endif /* ASCPARSER_H */

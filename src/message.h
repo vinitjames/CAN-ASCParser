@@ -1,3 +1,6 @@
+#ifndef MESSAGE_H
+#define MESSAGE_H
+
 #include <vector>
 #include <cstdint>
 
@@ -42,7 +45,7 @@ struct Message{
 
 	void timestamp(double timestamp);
 	double timestamp () const;
-		
+	std::vector<uint8_t> _data;	
 private:
 	
 	double _timestamp = 0.0;
@@ -56,7 +59,8 @@ private:
 	bool _is_rx = false;
 	bool _bit_rate_switch = false;
 	bool _error_state_indicator = false;
-	std::vector<uint8_t> _data;
+	
 };
 
+#endif /* MESSAGE_H */
 

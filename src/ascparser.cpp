@@ -1,9 +1,11 @@
 #include "ascparser.h"
+
 #include <stdexcept>
-#include<iostream>
 #include <sstream>
 #include <iterator>
 #include <memory>
+#include "ascparser.h"
+#include "message.h"
 
 ASCParser::ASCParser(const std::string& filename){
 	if(filename.substr(filename.find(".asc")) != ".asc")
@@ -52,14 +54,19 @@ bool ASCParser::parseHeader(){
 
 std::unique_ptr<Message> ASCParser::getMessage(){
 	std::string line;
-	std::getline(_ifs,line);
-	std::vector<std::string> split_frame = splitFrame(line);
-	if(!checkTimestamp(split_frame))
-		return nullptr;
-		
+	if(!std::getline(_ifs,line)){
+		eof_reached = true;
+		return std::make_unique<Message>();}
 	
-	if (isCANFD(split_frame))
+	std::vector<std::string> split_frame = splitFrame(line);
+	
+	if(!checkTimestamp(split_frame))
+		return nullptr;	
+	
+	if (isCANFD(split_frame)){
 		return std::make_unique<Message>(parseCANFD(split_frame));
+	}
+	
 	if (isCAN(split_frame))
 		return std::make_unique<Message>(parseCAN(split_frame));
 	return nullptr;
@@ -70,8 +77,9 @@ bool ASCParser::checkTimestamp(const std::vector<std::string>& split_frame){
 }
 
 bool ASCParser::isCAN(const std::vector<std::string>& split_frame){
-	return isInt(split_frame[1]);
-	
+	if(isInt(split_frame[1]))
+		return (split_frame[2]!="Statistic:")&&(split_frame[2]!="J1939TP");
+	return false;
 }
 
 bool ASCParser::isInt(const std::string& str){
@@ -105,7 +113,7 @@ Message ASCParser::parseCANFD(const std::vector<std::string>& split_frame){
 	size_t _index = 2;
 	msg.channel(std::stoi(split_frame[_index++]) - 1);
 	msg.is_rx(split_frame[_index++] == "Rx");
-	if(split_frame[_index] == "errorframe"){
+	if(split_frame[_index] == "ErrorFrame"){
 		msg.is_error_frame(true);
 		return msg;		
 	}
@@ -124,16 +132,17 @@ Message ASCParser::parseCANFD(const std::vector<std::string>& split_frame){
 		msg.is_remote_frame(true);
 		return msg;
 	}
-	//msg.data = parseDataFromString(split_frame, _data_length, _index);
+	msg._data = parseDataFromString(split_frame, _data_length, _index);
 	return msg;			
 }
 
 Message ASCParser::parseCAN(const std::vector<std::string>& split_frame){
 	Message msg;
-	size_t _index = 1;
+	msg.timestamp(std::stod(split_frame[0]));
 	msg.is_fd(false);
+	size_t _index = 1;
 	msg.channel(std::stoi(split_frame[_index++].c_str()) - 1);
-	if(split_frame[_index] == "errorframe"){
+	if(split_frame[_index] == "ErrorFrame"){
 		msg.is_error_frame(true);
 		return msg;		
 	}	
@@ -165,9 +174,9 @@ int ASCParser::getArbitrationID(const std::string& can_id_str){
 
 std::vector<uint8_t> ASCParser::parseDataFromString(const std::vector<std::string>& split_frame,
 													size_t length, size_t index){
-	std::vector<uint8_t> data(length);
+	std::vector<uint8_t> data;
 	for(int i = 0; i<length; i++)
-		data.push_back(stoi(split_frame[index++]));
+		data.push_back(std::stoi(split_frame[index++], nullptr, getBase()));
 	return data;
 }
 
@@ -189,14 +198,3 @@ ASCParser::~ASCParser()noexcept{
 	_ifs.close();
 }
 
-int main(int argc, char *argv[])
-{
-    ASCParser parser("test_CanFdMessage.asc");
-	std::unique_ptr<Message> msg;
-	do{
-		msg = parser.getMessage();
-	}
-	while(msg == nullptr);
-	std::cout<<msg->timestamp()<<std::endl;
-    return 0;
-}
