@@ -61,8 +61,8 @@ bool Message::is_fd() const {return _is_fd;}
 void Message::is_remote_frame(bool is_remote_frame){_is_remote_frame = is_remote_frame;}
 bool Message::is_remote_frame() const {return _is_remote_frame;}
 	
-void Message::is_rx(bool is_fd) {_is_fd = is_fd;}
-bool Message::is_rx() const {return _is_fd;};
+void Message::is_rx(bool is_rx) {_is_rx = is_rx;}
+bool Message::is_rx() const {return _is_rx;};
 
 void Message::timestamp(double timestamp){ _timestamp = timestamp;}
 double Message::timestamp() const {return _timestamp;}

@@ -141,34 +141,43 @@ Message ASCParser::parseCAN(const std::vector<std::string>& split_frame){
 	msg.timestamp(std::stod(split_frame[0]));
 	msg.is_fd(false);
 	size_t _index = 1;
-	msg.channel(std::stoi(split_frame[_index++].c_str()) - 1);
+	msg.channel(std::stoi(split_frame[_index++]) - 1);
 	if(split_frame[_index] == "ErrorFrame"){
 		msg.is_error_frame(true);
 		return msg;		
-	}	
+	}
+	
 	msg.arbitration_id(getArbitrationID(split_frame[_index++]));
 	msg.is_rx(split_frame[_index++] == "Rx");
-	if(!isInt(split_frame[_index])){
-		_index++;
-		}
-	
-	msg.bit_rate_switch(split_frame[_index++] == "1");
-	msg.error_state_indicator(split_frame[_index++] == "1");
-	msg.dlc(std::stoi(split_frame[_index++], nullptr, getBase()));
-	int _data_length = stoi(split_frame[_index++]);
-	if(_data_length == 0){
-		msg.is_remote_frame(true);
+	msg.is_remote_frame(split_frame[_index] == "r");
+	if(msg.is_remote_frame()){
+		msg.dlc(parseCANRemote(split_frame, _index + 1));
 		return msg;
 	}
-
-	//msg.data = parseDataFromString(split_frame, _data_length, _index);
-
+	if(split_frame[_index++] != "d")
+		return msg;
+	msg.dlc(std::stoi(split_frame[_index++], nullptr, getBase()));
+	if(split_frame.size()<= _index)
+		return msg;
+	
+	msg._data = parseDataFromString(split_frame, msg.dlc(), _index);
 	return msg;			
 }
 
+int ASCParser::parseCANRemote(const std::vector<std::string>& split_frame,
+							  const unsigned int index){
+	if(split_frame.size() <= index)
+		return 0;
+	std::string nextToken{split_frame[index]};
+	if(!isInt(nextToken))
+		return 0;
+	return std::stoi(nextToken);
+}
+	
+
 int ASCParser::getArbitrationID(const std::string& can_id_str){
 	if(can_id_str.back() == 'x')
-		return std::stoi(can_id_str.substr(0, can_id_str.length()-1), nullptr, 16);
+		return std::stoi(can_id_str.substr(0, can_id_str.length()-1), nullptr, getBase());
 	return std::stoi(can_id_str, nullptr, getBase());	
 }
 

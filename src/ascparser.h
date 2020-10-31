@@ -42,6 +42,8 @@ private:
 	bool isCAN(const std::vector<std::string>& split_frame);
 	bool isInt(const std::string& str);
 	bool isDouble(const std::string& str);
+	int parseCANRemote(const std::vector<std::string>& split_frame,
+					   const unsigned int index);
 	std::vector<uint8_t> parseDataFromString(const std::vector<std::string>& split_frame,
 											 size_t length, size_t index);
 	std::ifstream _ifs;
