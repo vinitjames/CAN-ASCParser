@@ -1,10 +1,19 @@
+#ifndef MESSAGE_H
+#define MESSAGE_H
+
 #include <vector>
 #include <cstdint>
 
 
 struct Message{
 
-	void arbiration_id(int id);
+	Message() = default;
+	Message(Message& other) = default;
+	Message(Message&& other) noexcept;
+	Message& operator=(Message& other) = default;
+	Message& operator=(Message&& other) noexcept;
+	
+	void arbitration_id(int id);
 	int arbitration_id() const;
 
 	void bit_rate_switch(bool bit_rate_switch);
@@ -36,7 +45,7 @@ struct Message{
 
 	void timestamp(double timestamp);
 	double timestamp () const;
-		
+	std::vector<uint8_t> _data;	
 private:
 	
 	double _timestamp = 0.0;
@@ -50,7 +59,8 @@ private:
 	bool _is_rx = false;
 	bool _bit_rate_switch = false;
 	bool _error_state_indicator = false;
-	std::vector<uint8_t> _data;
+	
 };
 
+#endif /* MESSAGE_H */
 
