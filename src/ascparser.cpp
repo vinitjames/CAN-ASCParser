@@ -4,7 +4,7 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
-
+#include <exception>
 #include "ascparser.h"
 #include "message.h"
 
@@ -60,14 +60,17 @@ std::unique_ptr<Message> ASCParser::getMessage() {
   std::vector<std::string> split_frame = splitFrame(line);
 
   if (!checkTimestamp(split_frame)) return nullptr;
-
+  try{
   if (isCANFD(split_frame)) {
     return std::make_unique<Message>(parseCANFD(split_frame));
   }
 
   if (isCAN(split_frame))
     return std::make_unique<Message>(parseCAN(split_frame));
-  return nullptr;
+  }
+  catch(std::exception){
+	  return nullptr;
+  }
 }
 
 bool ASCParser::checkTimestamp(const std::vector<std::string>& split_frame) {
@@ -193,3 +196,4 @@ bool ASCParser::checkHeader() {
 int ASCParser::getBase() { return _base == "hex" ? 16 : 10; }
 
 ASCParser::~ASCParser() noexcept { _ifs.close(); }
+
