@@ -59,36 +59,53 @@ bool Token::operator!=(const double& double_val) const{
 
 const Type& Token::getType() const { return _type;}
 
-void Token::getValue(const Type& type, void* val) const{
-
-	if(type == Type::HEX){
-			
-		}
-		
-	else if(type != _type)
-		throw std::invalid_argument("Token type cannot be converted to {type}");
-	
-	_getBaseValue(type, val);
-
-	}
-
-
-void Token::_getBaseValue(const Type &type, void* val) const {
+/*void Token::getValue(const Type& type, void* val) const{
 	switch (type) {
 	case Type::INT: {
-		*(int*)val = _int_val;
+		*static_cast<int*>(val) = _getIntValue(); 
 		break;
 	}
-	case Type::DOUBLE:{
-		*(double*)val = _int_val;
+	case Type::DOUBLE: {
+		*static_cast<double*>(val) = _getDoubleValue(); 
 		break;
 	}
-	default:{
-	*(std::string*)val = _str_val;
-	break;
+	case Type::HEX: {
+		*static_cast<int*>(val) = _getHexValue(); 
+		break;
+	}
+default:
+	{
+		*static_cast<std::string*>(val) = _getStringValue(); 
+		break;
 	}
 	}
+	
 }
+*/
+
+int Token::getIntValue() const {
+	if(_type != Type::INT)
+		throw std::invalid_argument("Current Token is not of type Int.");
+	return _int_val;
+}
+
+double Token::getDoubleValue() const {
+	if(_type != Type::DOUBLE)
+		throw std::invalid_argument("Current Token is not of type Double.");
+	return _doub_val;
+}
+
+int Token::getHexValue() const {
+	if(_type == Type::DOUBLE)
+		throw std::invalid_argument("Cannot convert double to hex");
+	int val;
+	if(!StringUtil::StringtoHex(_str_val, &val))
+		throw std::invalid_argument("Cannot convert token to hex ");
+	return val;
+}
+
+const std::string& Token::getStringValue() const { return _str_val; }
+
 
 Tokenizer::Tokenizer(const std::string& str){
 	if(str.empty())
@@ -153,19 +170,24 @@ const Token& Tokenizer::getPrevToken() const {
 	return _token_stream[--_index];
 }
 
-void Tokenizer::resetTokenStream() {_index = 0;}
+void Tokenizer::resetTokenStream() const { _index = 0; }
 
 	
 int main(int argc, char *argv[])
 {
-    Tokenizer tokenizer("this is a 20 dollor value");
+    Tokenizer tokenizer("0.234 18EBFF00x");
+
+	int i = 0;
+	std::string str;
+	double db;
+	tokenizer.front().getValue(Type::DOUBLE, &db);
+	std::cout<<db<<std::endl;
+	tokenizer.back().getValue(Type::HEX, &i);
+	std::cout<<i<<std::endl;
+	tokenizer.getCurrToken().getValue(Type::STRING, &str);
 	while(true){
-	try{
-		std::cout<<*(std::string*)(tokenizer.getNextToken().getVal())<<std::endl;
-			}
-	catch(std::exception& e){
-		std::cout<<tokenizer.getCurrToken().getVal()<<std::endl;
-	}
+		std::cout<< str<<std::endl;
+		tokenizer.getNextToken().getValue(Type::STRING, &str);
 	}
     return 0;
 }
