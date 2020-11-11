@@ -3,14 +3,14 @@
 
 #include <string>
 
-namespace StringUtil{
+namespace StringUtil {
 
-	bool StringtoInt(const ::std::string& str, int* val);
+bool StringtoInt(const ::std::string& str, int* val);
 
-	bool StringtoDouble(const ::std::string& str, double* val);
+bool StringtoDouble(const ::std::string& str, double* val);
 
-	bool StringtoHex(const ::std::string& str, int* val);
-	
-}
+bool StringtoHex(const ::std::string& str, int* val);
+
+}  // namespace StringUtil
 
 #endif /* UTILS_H */

@@ -11,22 +11,22 @@
 class ASCParser {
  public:
   //! Default constructor
-  ASCParser(const std::string &filename);
+  ASCParser(const std::string& filename);
 
   //! Copy constructor
-  ASCParser(const ASCParser &other) {}
+  ASCParser(const ASCParser& other) {}
 
   //! Move constructor
-  ASCParser(ASCParser &&other) noexcept {}
+  ASCParser(ASCParser&& other) noexcept {}
 
   //! Destructor
   virtual ~ASCParser() noexcept;
 
   //! Copy assignment operator
-  ASCParser &operator=(const ASCParser &other);
+  ASCParser& operator=(const ASCParser& other);
 
   //! Move assignment operator
-  ASCParser &operator=(ASCParser &&other) noexcept;
+  ASCParser& operator=(ASCParser&& other) noexcept;
 
   std::unique_ptr<Message> getMessage();
   Message parseCANFD(const Tokenizer& tokenizer);
@@ -41,11 +41,10 @@ class ASCParser {
   bool checkTimestamp(const Tokenizer& tokenized_frame);
   bool isCANFD(const Tokenizer& tokenized_frame);
   bool isCAN(const Tokenizer& tokenized_frame);
-	//bool isInt(const std::string &str);
-	//bool isDouble(const std::string &str);
   int parseCANRemote(const Tokenizer& tokenized_frame);
-	
-  std::vector<uint8_t> parseDataFromString(const Tokenizer& tokenized_frame, size_t length);
+
+  std::vector<uint8_t> parseDataFromString(const Tokenizer& tokenized_frame,
+                                           size_t length);
   std::ifstream _ifs;
   std::string _date;
   std::string _base;

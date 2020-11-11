@@ -1,9 +1,11 @@
 #include "ascparser.h"
+
+#include <exception>
 #include <iterator>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
-#include <exception>
+
 #include "ascparser.h"
 #include "message.h"
 #include "tokenizer.h"
@@ -58,35 +60,37 @@ std::unique_ptr<Message> ASCParser::getMessage() {
   }
 
   Tokenizer tokenized_frame(line);
-  try{
+  try {
+    if (!checkTimestamp(tokenized_frame)) return nullptr;
 
-	  if (!checkTimestamp(tokenized_frame)) 
+    if (isCANFD(tokenized_frame)) {
+      return std::make_unique<Message>(parseCANFD(tokenized_frame));
+    }
 
-	  if (isCANFD(tokenized_frame)) {
-		  return std::make_unique<Message>(parseCANFD(tokenized_frame));
-	  }
+    if (isCAN(tokenized_frame))
+      return std::make_unique<Message>(parseCAN(tokenized_frame));
 
-	  if (isCAN(tokenized_frame))
-		  return std::make_unique<Message>(parseCAN(tokenized_frame));
+    return nullptr;
   }
-  catch(std::exception){
-	  return nullptr;
+
+  catch (std::exception& e) {
+    return nullptr;
   }
 }
 
 bool ASCParser::checkTimestamp(const Tokenizer& tokenized_frame) {
-	return tokenized_frame.front() == Type::DOUBLE;
+  return tokenized_frame.front() == Type::DOUBLE;
 }
 
-bool ASCParser::isCAN(const Tokenizer& tokenized_stream){
-	if (tokenized_stream[1] == Type::INT)
-		return (tokenized_stream[2] != "Statistic:") && (tokenized_stream[2] != "J1939TP");
+bool ASCParser::isCAN(const Tokenizer& tokenized_stream) {
+  if (tokenized_stream[1] == Type::INT)
+    return (tokenized_stream[2] != "Statistic:") &&
+           (tokenized_stream[2] != "J1939TP");
   return false;
 }
 
-bool ASCParser::isCANFD(const Tokenizer& tokenizer){
-	
-	return tokenizer[1] == "CANFD";
+bool ASCParser::isCANFD(const Tokenizer& tokenizer) {
+  return tokenizer[1] == "CANFD";
 }
 
 Message ASCParser::parseCANFD(const Tokenizer& tokenized_frame) {
@@ -94,7 +98,7 @@ Message ASCParser::parseCANFD(const Tokenizer& tokenized_frame) {
   Message msg;
   msg.timestamp(tokenized_frame.getCurrToken().getDoubleValue());
   msg.is_fd(tokenized_frame.getNextToken() == "CANFD");
-  
+
   msg.channel(tokenized_frame.getNextToken().getIntValue() - 1);
   msg.is_rx(tokenized_frame.getNextToken() == "Rx");
   if (tokenized_frame.getNextToken() == "ErrorFrame") {
@@ -104,80 +108,79 @@ Message ASCParser::parseCANFD(const Tokenizer& tokenized_frame) {
 
   msg.arbitration_id(getArbitrationID(tokenized_frame.getCurrToken()));
 
-  if (tokenized_frame.getNextToken() == Type::INT) 
-	  msg.bit_rate_switch(tokenized_frame.getCurrToken() == 1);
+  if (tokenized_frame.getNextToken() == Type::INT)
+    msg.bit_rate_switch(tokenized_frame.getCurrToken() == "1");
   else
-	  msg.bit_rate_switch(tokenized_frame.getNextToken() == 1);
-  
-  msg.error_state_indicator(tokenized_frame.getNextToken() == 1);
+    msg.bit_rate_switch(tokenized_frame.getNextToken() == "1");
 
-  if(getBase() == 16)
-	  msg.dlc(tokenized_frame.getNextToken().getHexValue());
+  msg.error_state_indicator(tokenized_frame.getNextToken() == "1");
+
+  if (getBase() == 16)
+    msg.dlc(tokenized_frame.getNextToken().getHexValue());
   else
-	  msg.dlc(tokenized_frame.getNextToken().getIntValue());
+    msg.dlc(tokenized_frame.getNextToken().getIntValue());
 
   int _data_length = tokenized_frame.getNextToken().getIntValue();
   if (_data_length == 0) {
-	  msg.is_remote_frame(true);
-	  return msg;
+    msg.is_remote_frame(true);
+    return msg;
   }
   msg._data = parseDataFromString(tokenized_frame, _data_length);
   return msg;
 }
 
 Message ASCParser::parseCAN(const Tokenizer& tokenized_frame) {
-	tokenized_frame.resetTokenStream();
-	Message msg;
-	msg.timestamp(tokenized_frame.getCurrToken().getDoubleValue());
-	msg.is_fd(false);
-	msg.channel(tokenized_frame.getNextToken().getIntValue()- 1);
-	if (tokenized_frame.getNextToken() == "ErrorFrame") {
-		msg.is_error_frame(true);
-		return msg;
-	}
+  tokenized_frame.resetTokenStream();
+  Message msg;
+  msg.timestamp(tokenized_frame.getCurrToken().getDoubleValue());
+  msg.is_fd(false);
+  msg.channel(tokenized_frame.getNextToken().getIntValue() - 1);
+  if (tokenized_frame.getNextToken() == "ErrorFrame") {
+    msg.is_error_frame(true);
+    return msg;
+  }
 
-	msg.arbitration_id(getArbitrationID(tokenized_frame.getCurrToken()));
-	msg.is_rx(tokenized_frame.getNextToken() == "Rx");
-	msg.is_remote_frame(tokenized_frame.getNextToken() == "r");
-	if (msg.is_remote_frame()) {
-		msg.dlc(parseCANRemote(tokenized_frame));
-		return msg;
-	}
-	if (tokenized_frame.getNextToken() != "d") return msg;
-	if(getBase() == 16)
-	  msg.dlc(tokenized_frame.getNextToken().getHexValue());
-	else
-	  msg.dlc(tokenized_frame.getNextToken().getIntValue());
-	
-	msg._data = parseDataFromString(tokenized_frame, msg.dlc());
-	return msg;
+  msg.arbitration_id(getArbitrationID(tokenized_frame.getCurrToken()));
+  msg.is_rx(tokenized_frame.getNextToken() == "Rx");
+  msg.is_remote_frame(tokenized_frame.getNextToken() == "r");
+  if (msg.is_remote_frame()) {
+    msg.dlc(parseCANRemote(tokenized_frame));
+    return msg;
+  }
+  if (tokenized_frame.getNextToken() != "d") return msg;
+  if (getBase() == 16)
+    msg.dlc(tokenized_frame.getNextToken().getHexValue());
+  else
+    msg.dlc(tokenized_frame.getNextToken().getIntValue());
+
+  msg._data = parseDataFromString(tokenized_frame, msg.dlc());
+  return msg;
 }
 
 int ASCParser::parseCANRemote(const Tokenizer& tokenized_frame) {
-	try{
-		if (tokenized_frame.getNextToken() != Type::INT ) return 0;
-		return tokenized_frame.getCurrToken().getIntValue();
-	}
-	catch(std::exception& e){
-		return 0;
-	}
+  try {
+    if (tokenized_frame.getNextToken() != Type::INT) return 0;
+    return tokenized_frame.getCurrToken().getIntValue();
+  } catch (std::exception& e) {
+    return 0;
+  }
 }
 
 int ASCParser::getArbitrationID(const Token& token) {
-	if (getBase() == 16)
-		return token.getHexValue();
-	return token.getIntValue();
+  if (getBase() == 16) return token.getHexValue();
+  return token.getIntValue();
 }
 
-std::vector<uint8_t> ASCParser::parseDataFromString(const Tokenizer& tokenized_frame, std::size_t length) {
+std::vector<uint8_t> ASCParser::parseDataFromString(
+    const Tokenizer& tokenized_frame, std::size_t length) {
   std::vector<uint8_t> data;
-  for (int i = 0; i < length; i++){
-	  if(getBase() == 16)
-		  data.push_back(tokenized_frame.getNextToken().getHexValue());
-	  else
-		  data.push_back(tokenized_frame.getNextToken().getHexValue());
+  for (int i = 0; i < length; i++) {
+    if (getBase() == 16)
+      data.push_back(tokenized_frame.getNextToken().getHexValue());
+    else
+      data.push_back(tokenized_frame.getNextToken().getHexValue());
   }
-	 
+
   return data;
 }
 
@@ -192,4 +195,3 @@ bool ASCParser::checkHeader() {
 int ASCParser::getBase() { return _base == "hex" ? 16 : 10; }
 
 ASCParser::~ASCParser() noexcept { _ifs.close(); }
-
