@@ -6,6 +6,7 @@
 #include <string>
 
 #include "message.h"
+#include "tokenizer.h"
 
 class ASCParser {
  public:
@@ -28,25 +29,23 @@ class ASCParser {
   ASCParser &operator=(ASCParser &&other) noexcept;
 
   std::unique_ptr<Message> getMessage();
-  Message parseCANFD(const std::vector<std::string> &split_frame);
-  Message parseCAN(const std::vector<std::string> &split_frame);
+  Message parseCANFD(const Tokenizer& tokenizer);
+  Message parseCAN(const Tokenizer& tokenizer);
   bool fileEnded() { return eof_reached; }
 
  private:
   bool parseHeader();
   bool checkHeader();
-  int getArbitrationID(const std::string &can_id_str);
+  int getArbitrationID(const Token& token);
   int getBase();
-  bool checkTimestamp(const std::vector<std::string> &split_frame);
-  std::vector<std::string> splitFrame(const std::string &frame);
-  bool isCANFD(const std::vector<std::string> &split_frame);
-  bool isCAN(const std::vector<std::string> &split_frame);
-  bool isInt(const std::string &str);
-  bool isDouble(const std::string &str);
-  int parseCANRemote(const std::vector<std::string> &split_frame,
-                     const unsigned int index);
-  std::vector<uint8_t> parseDataFromString(
-      const std::vector<std::string> &split_frame, size_t length, size_t index);
+  bool checkTimestamp(const Tokenizer& tokenized_frame);
+  bool isCANFD(const Tokenizer& tokenized_frame);
+  bool isCAN(const Tokenizer& tokenized_frame);
+	//bool isInt(const std::string &str);
+	//bool isDouble(const std::string &str);
+  int parseCANRemote(const Tokenizer& tokenized_frame);
+	
+  std::vector<uint8_t> parseDataFromString(const Tokenizer& tokenized_frame, size_t length);
   std::ifstream _ifs;
   std::string _date;
   std::string _base;

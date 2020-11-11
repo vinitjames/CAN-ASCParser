@@ -9,8 +9,7 @@ namespace StringUtil{
 
 	bool StringtoDouble(const ::std::string& str, double* val);
 
-	bool StringtoHex(const ::std::string& str, double* val);
-
+	bool StringtoHex(const ::std::string& str, int* val);
 	
 }
 

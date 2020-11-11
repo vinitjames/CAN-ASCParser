@@ -18,8 +18,6 @@ public:
 	Token() = delete;
 	Token(const std::string& val);
 	virtual ~Token() = default;
-	virtual const Type& getType() const;
-	virtual void getValue(const Type& type, void* val) const;
 	bool operator==(const Token& other) const;
 	bool operator==(const Type& type) const;
 	bool operator==(const std::string& other) const;
@@ -30,11 +28,15 @@ public:
 	bool operator!=(const std::string& other) const;
 	bool operator!=(const int& val) const;
 	bool operator!=(const double& val) const;
-	
+
+	const Type& getType() const;
+	//void getValue(const Type& type, void* val) const;
+	const std::string& getStringValue() const;
+	int getIntValue() const;
+	double getDoubleValue() const;
+	int getHexValue()const;
 	
 protected:
-	void _getBaseValue(const Type& type, void* val) const;
-	void _getHexValue(void* val)const;
 	Type _type;
 	std::string _str_val;
 	int _int_val = 0;
@@ -53,7 +55,7 @@ public:
 	const Token& getCurrToken() const;
 	const Token& getNextToken() const;
 	const Token& getPrevToken() const;
-	void resetTokenStream();
+	void resetTokenStream() const;
 	Token& front();
 	Token& back();
 	const Token& front() const;

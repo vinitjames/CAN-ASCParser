@@ -13,7 +13,8 @@ namespace StringUtil{
 		char* endptr = nullptr;
 		if (str.back() == 'x')
 			*val = std::strtol(str.substr(0, str.length() - 1).c_str(), &endptr, 16);
-		*val = std::strtol(str.c_str(), &endptr, 16);
+		else
+			*val = std::strtol(str.c_str(), &endptr, 16);
 		return *endptr == '\0';
 	}
 
