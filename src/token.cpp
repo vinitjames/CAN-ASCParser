@@ -74,7 +74,6 @@ double Token::getDoubleValue() const {
 }
 
 int Token::getHexValue() const {
-  if (_type == Type::NONE) _setBaseValueType();
   if (_type == Type::DOUBLE)
     throw std::invalid_argument("Cannot convert double to hex");
   int val;
