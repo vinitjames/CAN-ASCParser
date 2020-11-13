@@ -73,4 +73,5 @@ bool Message::is_rx() const { return _is_rx; };
 void Message::timestamp(double timestamp) { _timestamp = timestamp; }
 double Message::timestamp() const { return _timestamp; }
 
-const std::vector<uint8_t>& data();
+void Message::data(std::vector<uint8_t>&& data) { _data = std::move(data); }
+const std::vector<uint8_t>& Message::data() const { return _data; }

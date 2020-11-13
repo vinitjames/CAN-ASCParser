@@ -2,11 +2,11 @@
 
 #include <exception>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
 
-#include "ascparser.h"
 #include "message.h"
 #include "tokenizer.h"
 
@@ -19,29 +19,31 @@ ASCParser::ASCParser(const std::string& filename) {
 }
 
 bool ASCParser::parseHeader() {
-  std::string word;
-  while (_ifs >> word) {
-    if (word == "date") {
+  if (!_startToken.empty())
+    throw std::invalid_argument("parseHeader called without empty startToken");
+
+  while (_ifs >> _startToken) {
+    if (_startToken == "date") {
       std::getline(_ifs, _date);
       continue;
     }
 
-    if (word == "base") {
+    if (_startToken == "base") {
       _ifs >> _base;
       continue;
     }
 
-    if (word == "timestamps") {
+    if (_startToken == "timestamps") {
       _ifs >> _timestamp_format;
       continue;
     }
 
-    if (word == "internal") {
+    if (_startToken == "internal") {
       _internal_events_logged = true;
       break;
     }
 
-    if (word == "no") {
+    if (_startToken == "no") {
       _internal_events_logged = false;
       break;
     }
@@ -53,29 +55,31 @@ bool ASCParser::parseHeader() {
 }
 
 std::unique_ptr<Message> ASCParser::getMessage() {
-  std::string line;
-  if (!std::getline(_ifs, line)) {
-    eof_reached = true;
-    return std::make_unique<Message>();
-  }
+  std::unique_ptr<Message> msg = nullptr;
 
-  Tokenizer tokenized_frame(line);
-  try {
-    if (!checkTimestamp(tokenized_frame)) return nullptr;
-
-    if (isCANFD(tokenized_frame)) {
-      return std::make_unique<Message>(parseCANFD(tokenized_frame));
+  while (!msg && !eof_reached) {
+    std::string line;
+    if (!std::getline(_ifs, line)) {
+      eof_reached = true;
+      break;
     }
 
-    if (isCAN(tokenized_frame))
-      return std::make_unique<Message>(parseCAN(tokenized_frame));
+    Tokenizer tokenized_frame(line);
+    try {
+      if (!checkTimestamp(tokenized_frame)) continue;
 
-    return nullptr;
-  }
+      if (isCANFD(tokenized_frame))
+        msg = std::make_unique<Message>(parseCANFD(tokenized_frame));
 
-  catch (std::exception& e) {
-    return nullptr;
+      if (isCAN(tokenized_frame))
+        msg = std::make_unique<Message>(parseCAN(tokenized_frame));
+    }
+
+    catch (std::exception& e) {
+      continue;
+    }
   }
+  return msg;
 }
 
 bool ASCParser::checkTimestamp(const Tokenizer& tokenized_frame) {
@@ -125,7 +129,7 @@ Message ASCParser::parseCANFD(const Tokenizer& tokenized_frame) {
     msg.is_remote_frame(true);
     return msg;
   }
-  msg._data = parseDataFromString(tokenized_frame, _data_length);
+  msg.data(parseDataFromString(tokenized_frame, _data_length));
   return msg;
 }
 
@@ -147,13 +151,13 @@ Message ASCParser::parseCAN(const Tokenizer& tokenized_frame) {
     msg.dlc(parseCANRemote(tokenized_frame));
     return msg;
   }
-  if (tokenized_frame.getNextToken() != "d") return msg;
+  if (tokenized_frame.getCurrToken() != "d") return msg;
   if (getBase() == 16)
     msg.dlc(tokenized_frame.getNextToken().getHexValue());
   else
     msg.dlc(tokenized_frame.getNextToken().getIntValue());
 
-  msg._data = parseDataFromString(tokenized_frame, msg.dlc());
+  msg.data(parseDataFromString(tokenized_frame, msg.dlc()));
   return msg;
 }
 

@@ -46,6 +46,7 @@ class ASCParser {
   std::vector<uint8_t> parseDataFromString(const Tokenizer& tokenized_frame,
                                            size_t length);
   std::ifstream _ifs;
+  std::string _startToken;
   std::string _date;
   std::string _base;
   std::string _timestamp_format;

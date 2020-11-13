@@ -43,7 +43,9 @@ struct Message {
 
   void timestamp(double timestamp);
   double timestamp() const;
-  std::vector<uint8_t> _data;
+
+  void data(std::vector<uint8_t>&& data);
+  const std::vector<uint8_t>& data() const;
 
  private:
   double _timestamp = 0.0;
@@ -57,6 +59,7 @@ struct Message {
   bool _is_rx = false;
   bool _bit_rate_switch = false;
   bool _error_state_indicator = false;
+  std::vector<uint8_t> _data;
 };
 
 #endif /* MESSAGE_H */
