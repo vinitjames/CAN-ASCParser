@@ -11,15 +11,15 @@ project(CanAscParser VERSION 1.0
 add_library(canasc
             STATIC
             src/ascparser.cpp
-			src/ascparser.h
-			src/message.cpp
-			src/message.h
-			src/token.cpp
-			src/token.h
-			src/tokenizer.cpp
-			src/tokenizer.h
-			src/utils.cpp
-			src/utils.h)
+            src/ascparser.h
+            src/message.cpp
+            src/message.h
+            src/token.cpp
+            src/token.h
+            src/tokenizer.cpp
+            src/tokenizer.h
+            src/utils.cpp
+            src/utils.h)
 
 target_include_directories(canasc PUBLIC include)
 
