@@ -23,4 +23,8 @@ add_library(canasc
 
 target_include_directories(canasc PUBLIC include)
 
+set_target_properties(canasc
+                      PROPERTIES
+                      CXX_STANDARD 11)
+					  
 add_subdirectory(sample)
