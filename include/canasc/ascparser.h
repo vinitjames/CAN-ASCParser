@@ -6,7 +6,9 @@
 #include <string>
 
 #include "message.h"
-#include "tokenizer.h"
+
+class Tokenizer;
+class Token;
 
 class ASCParser {
  public:
@@ -14,10 +16,10 @@ class ASCParser {
   ASCParser(const std::string& filename);
 
   //! Copy constructor
-  ASCParser(const ASCParser& other) {}
+  ASCParser(const ASCParser& other) = default;
 
   //! Move constructor
-  ASCParser(ASCParser&& other) noexcept {}
+  ASCParser(ASCParser&& other) noexcept = default;
 
   //! Destructor
   virtual ~ASCParser() noexcept;
