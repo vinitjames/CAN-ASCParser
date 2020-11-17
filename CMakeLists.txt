@@ -25,6 +25,6 @@ target_include_directories(canasc PUBLIC include)
 
 set_target_properties(canasc
                       PROPERTIES
-                      CXX_STANDARD 11)
+                      CXX_STANDARD 14)
 					  
 add_subdirectory(sample)
