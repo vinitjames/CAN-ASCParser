@@ -1,49 +1,56 @@
 #include "ascparser.h"
-
 #include <exception>
 #include <iterator>
 #include <limits>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
-
 #include "message.h"
 #include "tokenizer.h"
+#include <iostream>
 
-ASCParser::ASCParser(const std::string& filename) {
-  if (filename.substr(filename.find(".asc")) != ".asc")
-    throw std::invalid_argument("filename is not of .asc type");
-  _ifs.open(filename, std::ifstream::in);
-  if (!_ifs.is_open()) throw std::invalid_argument("Could not open filename");
-  if (!parseHeader()) throw std::domain_error("asc file with wrong header");
+ASCParser::ASCParser(const std::string& filename)
+	:_filename{filename}{
+	if (filename.substr(filename.find(".asc")) != ".asc")
+		throw std::invalid_argument("filename is not of .asc type");
+  
+	_ifs.open(filename, std::ifstream::in);
+	if (!_ifs.is_open()) throw std::invalid_argument("Could not open filename");
+	if (!parseHeader()) throw std::domain_error("asc file with wrong header");
+}
+
+void ASCParser::reinit(){
+	if(_ifs.is_open())
+		_ifs.close();
+	_ifs.open(_filename, std::ifstream::in);	
+	parseHeader();
+	_eof_reached = false;
 }
 
 bool ASCParser::parseHeader() {
-  if (!_startToken.empty())
-    throw std::invalid_argument("parseHeader called without empty startToken");
-
-  while (_ifs >> _startToken) {
-    if (_startToken == "date") {
+	std::string word; 
+  while (_ifs >> word){
+    if (word == "date") {
       std::getline(_ifs, _date);
       continue;
     }
 
-    if (_startToken == "base") {
+    if (word == "base") {
       _ifs >> _base;
       continue;
     }
 
-    if (_startToken == "timestamps") {
+    if (word == "timestamps") {
       _ifs >> _timestamp_format;
       continue;
     }
 
-    if (_startToken == "internal") {
+    if (word == "internal") {
       _internal_events_logged = true;
       break;
     }
 
-    if (_startToken == "no") {
+    if (word == "no") {
       _internal_events_logged = false;
       break;
     }
@@ -56,31 +63,36 @@ bool ASCParser::parseHeader() {
 
 std::unique_ptr<Message> ASCParser::getMessage() {
   std::unique_ptr<Message> msg = nullptr;
-
-  while (!msg && !eof_reached) {
-    std::string line;
-    if (!std::getline(_ifs, line)) {
-      eof_reached = true;
-      break;
-    }
-
-    Tokenizer tokenized_frame(line);
+  
+  while (!msg && loadNextStream()) {     
+    Tokenizer tokenized_frame(_currStream);
     try {
-      if (!checkTimestamp(tokenized_frame)) continue;
+		if (!checkTimestamp(tokenized_frame)) {
+			continue;
+		}
 
       if (isCANFD(tokenized_frame))
         msg = std::make_unique<Message>(parseCANFD(tokenized_frame));
 
       if (isCAN(tokenized_frame))
         msg = std::make_unique<Message>(parseCAN(tokenized_frame));
+	  
     }
 
     catch (std::exception& e) {
-      continue;
+		continue;
     }
   }
   return msg;
 }
+
+bool ASCParser::loadNextStream(){
+	 if (!std::getline(_ifs, _currStream)) {
+      _eof_reached = true;
+    }
+	 return !_eof_reached;
+}
+
 
 bool ASCParser::checkTimestamp(const Tokenizer& tokenized_frame) {
   return tokenized_frame.front() == Type::DOUBLE;
@@ -198,4 +210,7 @@ bool ASCParser::checkHeader() {
 
 int ASCParser::getBase() { return _base == "hex" ? 16 : 10; }
 
+bool ASCParser::fileEnded() { return _eof_reached;}
+
 ASCParser::~ASCParser() noexcept { _ifs.close(); }
+
