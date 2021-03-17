@@ -5,6 +5,8 @@
 namespace StringUtil {
 
 bool StringtoInt(const ::std::string& str, int* val) {
+	if(str.empty())
+		return false;
   char* endptr = nullptr;
   int _val;
   _val = ::std::strtol(str.c_str(), &endptr, 10);
@@ -16,6 +18,8 @@ bool StringtoInt(const ::std::string& str, int* val) {
 }
 
 bool StringtoHex(const ::std::string& str, int* val) {
+	if(str.empty())
+		return false;
   char* endptr = nullptr;
   int _val;
   if (str.back() == 'x')
@@ -30,6 +34,8 @@ bool StringtoHex(const ::std::string& str, int* val) {
 }
 
 bool StringtoDouble(const ::std::string& str, double* val) {
+	if(str.empty())
+		return false;
   char* endptr = nullptr;
   double _val;
   _val = ::std::strtod(str.c_str(), &endptr);

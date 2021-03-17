@@ -38,7 +38,7 @@ struct Message {
   void is_remote_frame(bool is_remote_frame);
   bool is_remote_frame() const;
 
-  void is_rx(bool is_fd);
+  void is_rx(bool is_rx);
   bool is_rx() const;
 
   void timestamp(double timestamp);

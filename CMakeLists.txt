@@ -21,6 +21,12 @@ add_library(canasc
             src/utils.cpp
             src/utils.h)
 
+message(${CMAKE_CURRENT_SOURCE_DIR})
+message(${CMAKE_SOURCE_DIR})
+file(GLOB PUBLIC_HEADERS "src/message.h" "src/utils.h" "src/ascparser.h" )
+
+file(COPY ${PUBLIC_HEADERS} DESTINATION ${CMAKE_SOURCE_DIR}/include/canasc)
+
 target_include_directories(canasc PUBLIC include)
 
 set_target_properties(canasc
@@ -28,7 +34,9 @@ set_target_properties(canasc
                       CXX_STANDARD 14)
 					  
 add_subdirectory(sample)
+enable_testing()
 
+add_subdirectory(tests)
 install(TARGETS canasc EXPORT canasc  DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 
