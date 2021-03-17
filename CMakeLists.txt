@@ -28,7 +28,8 @@ set_target_properties(canasc
                       CXX_STANDARD 14)
 					  
 add_subdirectory(sample)
-
+enable_testing()
+add_subdirectory(tests)
 install(TARGETS canasc EXPORT canasc  DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 
