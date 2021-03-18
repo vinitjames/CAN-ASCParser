@@ -1,13 +1,11 @@
 #include "token.h"
-
 #include <stdexcept>
-
 #include "utils.h"
 
 Token::Token(const std::string& str_val) : _str_val{str_val} {}
 
 bool Token::operator==(const Token& other) const {
-  return (_type == other._type) && (_str_val == other._str_val);
+  return (_str_val == other._str_val);
 }
 
 bool Token::operator==(const std::string& str_val) const {
@@ -62,14 +60,14 @@ void Token::_setBaseValueType() const {
 int Token::getIntValue() const {
   if (_type == Type::NONE) _setBaseValueType();
   if (_type != Type::INT)
-    throw std::invalid_argument("Current Token is not of type Int.");
+    throw std::invalid_argument("Token is not of type Int.");
   return _int_val;
 }
 
 double Token::getDoubleValue() const {
   if (_type == Type::NONE) _setBaseValueType();
   if (_type != Type::DOUBLE)
-    throw std::invalid_argument("Current Token is not of type Int.");
+    throw std::invalid_argument("Token is not of type Double.");
   return _doub_val;
 }
 
