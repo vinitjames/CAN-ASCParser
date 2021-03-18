@@ -4,7 +4,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
 #include "token.h"
 
 class Tokenizer {
@@ -26,7 +25,6 @@ class Tokenizer {
   Token& operator[](const std::size_t index);
   const Token& operator[](const std::size_t index) const;
 
-  // add [] operator and front and back and length
 
  private:
   void _tokenizeStream(const std::string& str);
