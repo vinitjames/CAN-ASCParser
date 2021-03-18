@@ -45,3 +45,10 @@ target_link_libraries(test_utils
 					  gtest_main
 					  )
 add_test(NAME test_utils COMMAND test_utils)
+
+add_executable(test_token test_token.cpp)
+target_link_libraries(test_token
+					  canasc
+					  gtest_main
+					  )
+add_test(NAME test_token COMMAND test_token)

@@ -23,11 +23,12 @@ add_library(canasc
 
 message(${CMAKE_CURRENT_SOURCE_DIR})
 message(${CMAKE_SOURCE_DIR})
+file(GLOB HEADERS "*.h" )
 file(GLOB PUBLIC_HEADERS "src/message.h" "src/utils.h" "src/ascparser.h" )
 
 file(COPY ${PUBLIC_HEADERS} DESTINATION ${CMAKE_SOURCE_DIR}/include/canasc)
 
-target_include_directories(canasc PUBLIC include)
+target_include_directories(canasc PUBLIC ${CMAKE_SOURCE_DIR}/src include)
 
 set_target_properties(canasc
                       PROPERTIES
