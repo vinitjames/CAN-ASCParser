@@ -52,3 +52,10 @@ target_link_libraries(test_token
 					  gtest_main
 					  )
 add_test(NAME test_token COMMAND test_token)
+
+add_executable(test_tokenizer test_tokenizer.cpp)
+target_link_libraries(test_tokenizer
+					  canasc
+					  gtest_main
+					  )
+add_test(NAME test_tokenizer COMMAND test_tokenizer)
