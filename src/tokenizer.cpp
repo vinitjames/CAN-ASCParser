@@ -17,13 +17,13 @@ void Tokenizer::_tokenizeStream(const std::string& str) {
 }
 
 Token& Tokenizer::operator[](const std::size_t index) {
-  if ((index < 0) || (index > _token_stream.size()))
+  if ((index < 0) || (index >= _token_stream.size()))
     throw ::std::out_of_range("index out of range of stream");
   return _token_stream[index];
 }
 
 const Token& Tokenizer::operator[](const std::size_t index) const {
-  if ((index < 0) || (index > _token_stream.size()))
+  if ((index < 0) || (index >= _token_stream.size()))
     throw ::std::out_of_range("index out of range of stream");
   return _token_stream[index];
 }
@@ -49,7 +49,7 @@ Token& Tokenizer::getCurrToken() { return _token_stream[_index]; }
 Token& Tokenizer::getPrevToken() {
   if (_index == 0)
     throw std::out_of_range(
-        "The token stream is inital position. No previous value");
+        "The token stream is in inital position. No previous value");
   return _token_stream[--_index];
 }
 
