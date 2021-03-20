@@ -11,11 +11,11 @@
 
 ASCParser::ASCParser(const std::string& filename)
 	:_filename{filename}{
-	if (filename.substr(filename.find(".asc")) != ".asc")
-		throw std::invalid_argument("filename is not of .asc type");
+	if (getFileExtension(_filename) != "asc")
+		throw std::invalid_argument("Filename is not of .asc type");
   
 	_ifs.open(filename, std::ifstream::in);
-	if (!_ifs.is_open()) throw std::invalid_argument("Could not open filename");
+	if (!_ifs.is_open()) throw std::invalid_argument("Could not open given .asc file");
 	if (!parseHeader()) throw std::domain_error("asc file with wrong header");
 }
 
@@ -31,8 +31,8 @@ bool ASCParser::parseHeader() {
 	std::string word; 
   while (_ifs >> word){
     if (word == "date") {
-      std::getline(_ifs, _date);
-      continue;
+		parseDate();
+		continue;
     }
 
     if (word == "base") {
@@ -59,6 +59,14 @@ bool ASCParser::parseHeader() {
   }
 
   return checkHeader();
+}
+
+void ASCParser::parseDate(){
+	_ifs >> _date.weekday;
+	_ifs >> _date.month;
+	_ifs >> _date.day;
+	_ifs >> _date.time;
+	_ifs >> _date.year;	
 }
 
 std::unique_ptr<Message> ASCParser::getMessage() {
@@ -202,7 +210,7 @@ std::vector<uint8_t> ASCParser::parseDataFromString(
 
 bool ASCParser::checkHeader() {
   if ((_base != "hex") && (_base != "dec")) return false;
-  if (_date.empty()) return false;
+  if (_date.weekday.empty()) return false;
   if ((_timestamp_format != "absolute") && (_timestamp_format != "relative"))
     return false;
   return true;
@@ -210,7 +218,29 @@ bool ASCParser::checkHeader() {
 
 int ASCParser::getBase() { return _base == "hex" ? 16 : 10; }
 
+std::string ASCParser::getFileExtension(const std::string& filePath){
+	std::string::size_type idx = filePath.rfind('.');
+	if(idx == std::string::npos)
+		return "";
+	return filePath.substr(idx+1);
+}
+
 bool ASCParser::fileEnded() { return _eof_reached;}
+
+const std::string& ASCParser::startTime() const{ return _date.time; }
+const std::string& ASCParser::weekday() const { return _date.weekday; }
+const std::string& ASCParser::year() const { return _date.year; }
+const std::string& ASCParser::month() const { return _date.month; }
+const std::string& ASCParser::day() const { return _date.day; }
+const std::string& ASCParser:: base() const{ return _base; }
+
+const std::string& ASCParser::timestamp_format() const {
+	return _timestamp_format;
+}
+
+bool ASCParser::internal_events_logged() const {
+	return _internal_events_logged;
+}
 
 ASCParser::~ASCParser() noexcept { _ifs.close(); }
 
