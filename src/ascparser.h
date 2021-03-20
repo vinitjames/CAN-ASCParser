@@ -15,29 +15,27 @@ class ASCParser {
   //! Default constructor
   ASCParser(const std::string& filename);
 
-  //! Copy constructor
-  ASCParser(const ASCParser& other) {}
-
-  //! Move constructor
-  ASCParser(ASCParser&& other) noexcept {}
-
   //! Destructor
   virtual ~ASCParser() noexcept;
 
-  //! Copy assignment operator
-  ASCParser& operator=(const ASCParser& other);
-
-  //! Move assignment operator
-  ASCParser& operator=(ASCParser&& other) noexcept;
   void reinit();
   std::unique_ptr<Message> getMessage();
   Message parseCANFD(const Tokenizer& tokenizer);
   Message parseCAN(const Tokenizer& tokenizer);
   bool fileEnded();
+	const std::string& startTime() const;
+	const std::string& weekday() const;
+	const std::string& year() const;
+	const std::string& month() const;
+	const std::string& day() const;
+	const std::string& base() const;
+	const std::string& timestamp_format() const;
+	bool internal_events_logged() const;
 
  private:
   bool parseHeader();
   bool checkHeader();
+  void parseDate();
   int getArbitrationID(const Token& token);
   int getBase();
   bool checkTimestamp(const Tokenizer& tokenized_frame);
@@ -45,12 +43,19 @@ class ASCParser {
   bool isCAN(const Tokenizer& tokenized_frame);
   int parseCANRemote(const Tokenizer& tokenized_frame);
   bool loadNextStream();
+  static std::string getFileExtension(const std::string& filepath); 
   std::vector<uint8_t> parseDataFromString(const Tokenizer& tokenized_frame,
                                            size_t length);
-  
+	struct Date {
+		std::string weekday;
+		std::string day;
+		std::string month;
+		std::string time;
+		std::string year;		
+	}_date;
+	
   std::ifstream _ifs;
   std::string _currStream;
-  std::string _date;
   std::string _base;
   std::string _timestamp_format;
   std::string _filename;
