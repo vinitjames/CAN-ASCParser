@@ -28,3 +28,7 @@ $ cmake ..
 $ cmake --build .
 $ ctest
 ```
+To Install after build run:
+```sh
+$ sudo cmake --install .
+```
