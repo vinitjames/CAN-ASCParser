@@ -32,6 +32,7 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
                  ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
 				 EXCLUDE_FROM_ALL)
 
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 add_executable(test_message test_message.cpp)
 target_link_libraries(test_message
 					  canasc
@@ -59,3 +60,10 @@ target_link_libraries(test_tokenizer
 					  gtest_main
 					  )
 add_test(NAME test_tokenizer COMMAND test_tokenizer)
+
+add_executable(test_ascparser test_ascparser.cpp)
+target_link_libraries(test_ascparser
+					  canasc
+					  gtest_main
+					  )
+add_test(NAME test_ascparser COMMAND test_ascparser)
