@@ -3,7 +3,7 @@
 #include <vector>
 #include <utility>
 #include "gtest/gtest.h"
-#include "canasc/utils.h"
+#include "utils.h"
 
 
 TEST(UtilsTest, TestStringToInt){	

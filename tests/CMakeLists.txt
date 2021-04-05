@@ -35,35 +35,35 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 add_executable(test_message test_message.cpp)
 target_link_libraries(test_message
-					  canasc
+					  canasc_parser
 					  gtest_main
 					  )
 add_test(NAME test_message COMMAND test_message)
 
 add_executable(test_utils test_utils.cpp)
 target_link_libraries(test_utils
-					  canasc
+					  canasc_parser
 					  gtest_main
 					  )
 add_test(NAME test_utils COMMAND test_utils)
 
 add_executable(test_token test_token.cpp)
 target_link_libraries(test_token
-					  canasc
+					  canasc_parser
 					  gtest_main
 					  )
 add_test(NAME test_token COMMAND test_token)
 
 add_executable(test_tokenizer test_tokenizer.cpp)
 target_link_libraries(test_tokenizer
-					  canasc
+					  canasc_parser
 					  gtest_main
 					  )
 add_test(NAME test_tokenizer COMMAND test_tokenizer)
 
 add_executable(test_ascparser test_ascparser.cpp)
 target_link_libraries(test_ascparser
-					  canasc
+					  canasc_parser
 					  gtest_main
 					  )
 add_test(NAME test_ascparser COMMAND test_ascparser)
