@@ -8,7 +8,7 @@ project(CanAscParser VERSION 1.0
                      DESCRIPTION "A parser for can .asc for file"
                      LANGUAGES CXX)
 
-add_library(canasc_parser
+add_library(canasc
             STATIC
             src/ascparser.cpp
             src/ascparser.h
@@ -24,15 +24,15 @@ add_library(canasc_parser
 
 file(GLOB PUBLIC_HEADERS "src/message.h" "src/utils.h" "src/ascparser.h" )
 
-file(COPY ${PUBLIC_HEADERS} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+file(COPY ${PUBLIC_HEADERS} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/include/canasc)
 
-target_include_directories(canasc_parser
+target_include_directories(canasc
 						   PUBLIC
 						   ${CMAKE_CURRENT_SOURCE_DIR}/src
-						   ${CMAKE_CURRENT_SOURCE_DIR}/include
+						   ${CMAKE_CURRENT_SOURCE_DIR}/include/canasc/
 						   )
 
-set_target_properties(canasc_parser
+set_target_properties(canasc
                       PROPERTIES
                       CXX_STANDARD 14)
 					  
@@ -40,6 +40,6 @@ add_subdirectory(sample)
 enable_testing()
 
 add_subdirectory(tests)
-install(TARGETS canasc_parser EXPORT canasc_parser  DESTINATION lib)
+install(TARGETS canasc EXPORT canasc  DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 
