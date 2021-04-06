@@ -2,8 +2,8 @@
 #include <iostream>
 #include <memory>
 
-#include "canasc/ascparser.h"
-#include "canasc/message.h"
+#include "ascparser.h"
+#include "message.h"
 
 int main(int argc, char *argv[]) {
   ASCParser parser("../testdata/testfile.asc");

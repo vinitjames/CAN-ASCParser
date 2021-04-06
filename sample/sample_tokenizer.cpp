@@ -1,6 +1,6 @@
 #include <iostream>
+#include "tokenizer.h"
 
-#include "../src/tokenizer.h"
 int main(int argc, char *argv[]) {
   Tokenizer tokenizer("0.23 18EBFF00x");
 

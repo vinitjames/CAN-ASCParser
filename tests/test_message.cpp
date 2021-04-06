@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 #include "gtest/gtest.h"
-#include "canasc/message.h"
+#include "message.h"
 
 class MessageTest : public ::testing::Test{
 public:
