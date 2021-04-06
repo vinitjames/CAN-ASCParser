@@ -2,7 +2,7 @@ from conans import ConanFile, CMake
 
 
 class CanAscParserConan(ConanFile):
-    name = "canasc_parser"
+    name = "canasc"
     version = "0.0.1"
     license = "MIT License"
     author = "Vinit James vinit.james24@gmail.com"
@@ -32,7 +32,7 @@ class CanAscParserConan(ConanFile):
 
     def package(self):
         libname = 'lib' + self.name
-        self.copy("*.h", dst="include", src="./include")
+        self.copy("canasc/*.h", dst="include", src="./include")
         self.copy("{}.lib".format(libname), dst="lib", keep_path=False)
         self.copy("{}.dll".format(libname), dst="bin", keep_path=False)
         self.copy("{}.dylib*".format(libname), dst="lib", keep_path=False)
@@ -40,4 +40,4 @@ class CanAscParserConan(ConanFile):
         self.copy("{}.a".format(libname), dst="lib", keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = ["canasc_parser"]
+        self.cpp_info.libs = ["canasc"]
