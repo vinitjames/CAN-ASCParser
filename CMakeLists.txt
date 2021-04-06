@@ -29,7 +29,7 @@ file(COPY ${PUBLIC_HEADERS} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/include/cana
 target_include_directories(canasc
 						   PUBLIC
 						   ${CMAKE_CURRENT_SOURCE_DIR}/src
-						   ${CMAKE_CURRENT_SOURCE_DIR}/include/canasc/
+						   ${CMAKE_CURRENT_SOURCE_DIR}/include
 						   )
 
 set_target_properties(canasc
