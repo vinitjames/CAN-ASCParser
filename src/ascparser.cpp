@@ -55,7 +55,7 @@ bool ASCParser::parseHeader() {
       break;
     }
 
-    return false;
+    break;
   }
 
   return checkHeader();

@@ -51,14 +51,7 @@ TEST(ASCParserTest, TestParseHeader){
 		EXPECT_EQ(err.what(), std::string("asc file with wrong header"));
 	}
 
-	try{
-		ASCParser ascparser("data/test_wrong_header4.asc");
-		FAIL() << "Expected std::domain_error"; 
-	}
-	catch(const std::domain_error& err){
-		EXPECT_EQ(err.what(), std::string("asc file with wrong header"));
-	}
-
+	
 	ASCParser ascparser("data/testfile.asc");
 	EXPECT_EQ(ascparser.weekday(), "Sam");
 	EXPECT_EQ(ascparser.month(), "Sep");
