@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "ascparser.h"
 #include <exception>
 #include <iterator>
@@ -11,7 +12,10 @@
 
 ASCParser::ASCParser(const std::string& filename)
 	:_filename{filename}{
-	if (getFileExtension(_filename) != "asc")
+	std::string ext = getFileExtension(_filename);
+	std::transform(ext.begin(), ext.end(), ext.begin(),
+				   [](unsigned char c){return std::tolower(c);});
+	if (ext != "asc")
 		throw std::invalid_argument("Filename is not of .asc type");
   
 	_ifs.open(filename, std::ifstream::in);
