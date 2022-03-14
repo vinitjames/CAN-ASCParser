@@ -23,6 +23,22 @@ TEST(ASCParserTest, TestFilenameType){
 	catch(const std::invalid_argument& err){
 		EXPECT_EQ(err.what(), std::string("Could not open given .asc file"));
 	}
+
+	try{
+		ASCParser ascparser("wrong_filename.Asc");
+		FAIL() << "Expected std::invalid_argument"; 
+	}
+	catch(const std::invalid_argument& err){
+		EXPECT_EQ(err.what(), std::string("Could not open given .asc file"));
+	}
+
+	try{
+		ASCParser ascparser("wrong_filename.ASC");
+		FAIL() << "Expected std::invalid_argument"; 
+	}
+	catch(const std::invalid_argument& err){
+		EXPECT_EQ(err.what(), std::string("Could not open given .asc file"));
+	}
 		
 }
 
